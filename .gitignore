@@ -3,3 +3,5 @@
 /*/env.js
 .env
 /*/.env
+server.cert
+server.key

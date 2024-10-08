@@ -2,6 +2,7 @@ import express from 'express';
 import User from '../schemas/user_schema.js';
 import Session from '../schemas/session_schema.js';
 import Players from '../schemas/players_schema.js';
+import { shuffleArray } from '../utils/game_logic.js';
 
 const router = express.Router();
 
@@ -61,17 +62,6 @@ const initiateSession = async (user_id) => {
         let randomPlayers = await fetchRandomPlayers();
         const solutionMap = createSolutionMapping(randomPlayers);
 
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-
-              const j = Math.floor(Math.random() * (i + 1));
-          
-              [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-          }
-        
         randomPlayers = shuffleArray(randomPlayers);
 
         const newSessionObject = {
@@ -83,13 +73,13 @@ const initiateSession = async (user_id) => {
             solution_map: solutionMap,
         };
 
-        console.log(newSessionObject);
+        // console.log(newSessionObject);
         const newSession = new Session(newSessionObject);
 
         // console.log(newSession);
         await newSession.save();
 
-        return { newSessionId, randomPlayers, solutionMap }
+        return { newSessionId, randomPlayers }
     } catch(e) {
         return false;
     }
@@ -105,11 +95,20 @@ async function addUser(user_id) {
 
         return true;
     } catch (error) {
-        return false; // Will this ever run?
+        return false; 
     }
-
-
 }
+
+async function fetchUser(user_id) {
+    try {
+        const user = await User.findOne({ user_id: user_id });  
+        return { user }; 
+    } catch (error) {
+        console.error("Error fetching user:", error);  
+        return false;  
+    }
+}
+
 
 router.post('/create', async (req, res) => {
 
@@ -119,9 +118,9 @@ router.post('/create', async (req, res) => {
     if (!doesIdExist) {
         const userAdded = await addUser(newId); 
         if (userAdded) {
-            const {newSessionId, randomPlayers, solutionMap} = await initiateSession(newId);
+            const {newSessionId, randomPlayers} = await initiateSession(newId);
             if (newSessionId) {
-                return res.status(201).json({ "user_id": newId, "session_id": newSessionId, "players": randomPlayers, "solution_map": solutionMap});
+                return res.status(201).json({ "user_id": newId, "session_id": newSessionId, "players": randomPlayers });
             }
 
             return res.status(500).json({message: 'Could not initiate session'});
@@ -133,5 +132,22 @@ router.post('/create', async (req, res) => {
     }
 })
 
+
+router.get('/stats/:user_id', async (req, res) => {
+    const { user_id } = req.params;
+    const { user } = await fetchUser(user_id);  // Destructure the user object from fetchUser
+
+    if (user) {
+        return res.status(200).json({
+            "games_played": user.games_played, 
+            "wins": user.wins, 
+            "longest_streak": user.longest_streak, 
+            "current_streak": user.current_streak, 
+            "attempts_distribution": user.attempts_distribution
+        });
+    }
+
+    return res.status(500).json({message: "Error"});
+});
 export default router;
 

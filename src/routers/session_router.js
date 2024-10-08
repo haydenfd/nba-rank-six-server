@@ -1,6 +1,8 @@
 import express from 'express';
 import Session from '../schemas/session_schema.js';
 import Players from '../schemas/players_schema.js';
+import User from '../schemas/user_schema.js';
+import { generateScoresArray, shuffleArray, MAX_ATTEMPTS } from '../utils/game_logic.js';
 
 const router = express.Router();
 
@@ -9,7 +11,7 @@ async function fetchRandomPlayers() {
 
         const randomPlayers = await Players.aggregate([
             { $sample: { size: 5 } },
-            { $project: { _id: 0, __v: 0 } } 
+            { $project: { _id: 0, __v: 0, FROM_YEAR: 0, TO_YEAR: 0, PPG: 0, EXP:0, GP: 0 } } 
 
         ]);
       return randomPlayers;
@@ -19,6 +21,11 @@ async function fetchRandomPlayers() {
       throw error;
     }
   }
+
+router.get('/x', async (req, res) => {
+  const players = await fetchRandomPlayers();
+  res.status(200).json({"players": players});
+})
 
 function createSolutionMapping(players) {
     players.sort((a, b) => b.PPG - a.PPG);
@@ -41,17 +48,6 @@ const initiateSession = async (user_id) => {
 
         let randomPlayers = await fetchRandomPlayers();
         const solutionMap = createSolutionMapping(randomPlayers);
-
-
-        function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-
-              const j = Math.floor(Math.random() * (i + 1));
-          
-              [array[i], array[j]] = [array[j], array[i]];
-            }
-            return array;
-          }
         
         randomPlayers = shuffleArray(randomPlayers);
 
@@ -99,21 +95,12 @@ router.get('/retrieve/:user_id/:session_id', async (req, res) => {
 
 router.post('/create', async (req, res) => {
 
-    // return res.json({user_id: req.body.user_id});
     const user_id = req.body.user_id;
 
     const new_id = createNewSessionId();
     let randomPlayers = await fetchRandomPlayers();
     const solutionMap = createSolutionMapping(randomPlayers);
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-
-          const j = Math.floor(Math.random() * (i + 1));
-      
-          [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-      }
+    
     
     randomPlayers = shuffleArray(randomPlayers);
 
@@ -128,40 +115,125 @@ router.post('/create', async (req, res) => {
     await newSession.save();
 
     res.status(201).json(newSession);
-    // const {newSessionId, randomPlayers, solutionMap} = await initiateSession(user_id);
-    // console.log("POOPOO");
-    // if (newSessionId) {
-    //     const data = {"session_id": newSessionId, "session_active": true, "players": randomPlayers, "solution_map": solutionMap};
-    //     console.log(data);
-    //     res.status(201).json(data);
-    // }
 
-    // return res.status(500).json({message: 'Could not initiate session'});
-})
+});
 
 
-// router.put('/update/:user_id/:session_id', async (req, res) => {
+router.put('/evaluate', async (req, res) => {
 
-//     const {user_id, session_id} = req.params;
-//     const updatedSessionData = req.body;
-//     console.log(updatedSessionData);
+    const { user_id, session_id, guesses, attempts } = req.body;
 
-//     try {
-
-//         const session = await Session.findOneAndUpdate(
-//           { user_id: user_id, session_id: session_id }, 
-//           { $set: updatedSessionData }, 
-//           { new: true }
-//         );
+    // console.log(user_id, session_id, guesses, attempts);
+    try {
+        const session = await Session.findOne({ user_id, session_id });
     
-//         if (!session) {
-//           return res.status(404).json({ message: 'Session not found' });
-//         }
+        if (!session) {
+          return res.status(404).json({ message: 'Session not found' });
+        }
+
+        const solution_map = session.solution_map;
+
+        const scores_array = generateScoresArray(guesses, solution_map);
+
+        // if every value is 0, then user wins. Set session_status to 1, return correct solution, update user stats
+        if (scores_array.every(score => score === 0)) {
+   
+          
+            const result = {
+                scores: scores_array,
+                session_status: 1,
+                attempts: attempts,
+            }
+
+            const user = await User.findOne({ user_id: user_id });
+
+
+            const newCurrentStreak = user.current_streak + 1; 
+
+            const updateResult = await User.updateOne(
+              {
+                user_id: user_id,
+              },
+              {
+                $inc: {
+                  games_played: 1,
+                  wins: 1,
+                  [`attempts_distribution.${attempts - 1}`]: 1, 
+                },
+                $set: {
+                  current_streak: newCurrentStreak
+                },
+                $max: {
+                  longest_streak: newCurrentStreak
+                }
+              }
+            );
+
+                 
+          if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+            console.log('Update successful:', updateResult);
+          }
+
+            // console.log(result);
+
+            res.json(result);
+
+        } else {
+
+            // user lost. Set session status to -1, return correct solution, update user stats
+            if (attempts === MAX_ATTEMPTS) {
+
+              // curr streak set to 0
+              // games played + 1
+              // TODO: Add session updating logic too
+              const user = await User.findOne({ user_id: user_id });
+
+              const updateResult = await User.updateOne(
+                {
+                  user_id: user_id,
+                },
+                {
+                  $inc: {
+                    games_played: 1,
+                  },
+                  $set: {
+                    current_streak: 0
+                  },
+                }
+              );
+
+              if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+                console.log('Update successful:', updateResult);
+              }
     
-//         res.status(200).json(session);
-//       } catch (error) {
-//         res.status(500).json({ message: 'Error updating session', error });
-//       }
-// })
+                const result = {
+                    session_status: -1,
+                    attempts: attempts,
+                    scores: scores_array,
+                }
+
+                res.json(result);
+            }
+
+            else {
+                const result = {
+                    session_status: 0,
+                    attempts: attempts,
+                    scores: scores_array,
+                }
+
+                res.json(result);
+            }
+
+        }
+
+     
+
+      } catch (error) {
+        res.status(500).json({ message: 'Error retrieving session', error });
+      }
+});
+    
+
 
 export default router;

@@ -2,9 +2,15 @@ import express from 'express';
 import cors from "cors";
 import userRouter from "./routers/user_router.js";
 import sessionRouter from "./routers/session_router.js";
-// import { MONGODB_URI } from './env.js';
 import 'dotenv/config';
 import mongoose from 'mongoose';
+import https from "https";
+import fs from "fs";
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(express.json());
@@ -19,7 +25,18 @@ mongoose.connect(process.env.MONGODB_URI, {
     console.error("Error connecting to MongoDB:", error);
 });
 
+app.get('/', (req, res) => {
+    res.send('Hello HTTPS!');
+  });
+
+const options = {
+    key: fs.readFileSync(path.join(__dirname, '../server.key')),
+    cert: fs.readFileSync(path.join(__dirname, '../server.cert'))
+};
+  
 app.use('/users', userRouter); 
 app.use('/session', sessionRouter)
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+https.createServer(options, app).listen(PORT, () => {
+    console.log(`HTTPS Server running on port ${PORT}`);
+  });
