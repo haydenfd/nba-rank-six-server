@@ -11,7 +11,7 @@ async function fetchRandomPlayers() {
 
         const randomPlayers = await Players.aggregate([
             { $sample: { size: 5 } },
-            { $project: { _id: 0, __v: 0, FROM_YEAR: 0, TO_YEAR: 0, PPG: 0, EXP:0, GP: 0 } } 
+            { $project: { _id: 0, __v: 0} } 
 
         ]);
       return randomPlayers;
@@ -169,8 +169,19 @@ router.put('/evaluate', async (req, res) => {
               }
             );
 
+            const sessionUpdate = await Session.updateOne({
+              user_id: user_id,
+              session_id: session_id,
+            },
+          {
+            $set: {
+              session_status: 1,
+              attempts: attempts
+            }
+          })
+
                  
-          if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+          if (updateResult.acknowledged && sessionUpdate.acknowledged) {
             console.log('Update successful:', updateResult);
           }
 
@@ -186,7 +197,19 @@ router.put('/evaluate', async (req, res) => {
               // curr streak set to 0
               // games played + 1
               // TODO: Add session updating logic too
-              const user = await User.findOne({ user_id: user_id });
+              // const user = await User.findOne({ user_id: user_id });
+
+              const sessionUpdate = await Session.updateOne({
+                user_id: user_id,
+                session_id: session_id,
+              },
+              {
+                $set: {
+                  session_status: -1,
+                  attempts: attempts
+                }
+              })
+    
 
               const updateResult = await User.updateOne(
                 {
@@ -202,7 +225,7 @@ router.put('/evaluate', async (req, res) => {
                 }
               );
 
-              if (updateResult.acknowledged && updateResult.modifiedCount > 0) {
+              if (updateResult.acknowledged && sessionUpdate.acknowledged) {
                 console.log('Update successful:', updateResult);
               }
     
