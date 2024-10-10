@@ -4,8 +4,8 @@ import userRouter from "./routers/user_router.js";
 import sessionRouter from "./routers/session_router.js";
 import 'dotenv/config';
 import mongoose from 'mongoose';
-import https from "https";
-import fs from "fs";
+// import https from "https";
+// import fs from "fs";
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -29,14 +29,11 @@ app.get('/', (req, res) => {
     res.send('Hello HTTPS!');
   });
 
-const options = {
-    key: fs.readFileSync(path.join(__dirname, '../server.key')),
-    cert: fs.readFileSync(path.join(__dirname, '../server.cert'))
-};
+
   
 app.use('/users', userRouter); 
 app.use('/session', sessionRouter)
 
-https.createServer(options, app).listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`HTTPS Server running on port ${PORT}`);
-  });
+});
