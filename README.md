@@ -1,3 +1,3 @@
-# Rank 5 Server
+# Rank 6 Backend Service
 
-- Need to figure out cost-efficient backend hosting. 
+- Hosted on AWS EC2 (t2.micro Ubuntu) w/ PM2. 
