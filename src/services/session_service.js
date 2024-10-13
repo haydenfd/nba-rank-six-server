@@ -1,14 +1,11 @@
-import Session from "../models/session_schema.js";
-import { shuffleArray } from "../utils/game_logic.js";
-import { generateSessionId } from "../utils/id_generator.js";
-import Players from "../models/players_schema.js";
+import Session from '../models/session_schema.js';
+import { shuffleArray } from '../utils/game_logic.js';
+import { generateSessionId } from '../utils/id_generator.js';
+import Players from '../models/players_schema.js';
 
 async function fetchRandomPlayers() {
     try {
-        const randomPlayers = await Players.aggregate([
-            { $sample: { size: 5 } },
-            { $project: { _id: 0, __v: 0 } },
-        ]);
+        const randomPlayers = await Players.aggregate([{ $sample: { size: 5 } }, { $project: { _id: 0, __v: 0 } }]);
         return randomPlayers;
     } catch (error) {
         console.error('Error fetching random players:', error);
@@ -78,17 +75,13 @@ const fetchSessionService = async (user_id, session_id) => {
             return null;
         }
 
-        console.log("Session:\n");
+        console.log('Session:\n');
         console.log(session);
         return session;
-
     } catch (error) {
         console.error(error);
         return null;
     }
 };
 
-export {
-    createSessionService,
-    fetchSessionService,
-};
+export { createSessionService, fetchSessionService };

@@ -13,7 +13,6 @@ const generateScoresArray = (guesses, solution_map) => {
         temp_scores.push(diff);
     }
 
-
     return temp_scores;
 };
 

@@ -3,7 +3,6 @@ import * as UserServices from '../services/user_service.js';
 import { createSessionService } from '../services/session_service.js';
 
 const handleCreateUserController = async (req, res) => {
-
     const newId = generateUserId();
     const doesUserIdExist = await UserServices.checkIfUserIdExistsService(newId);
 
@@ -22,32 +21,26 @@ const handleCreateUserController = async (req, res) => {
 
             res.status(500).json({ message: 'Error creating session' });
         } else {
-                res.status(500).json({ message: 'Error adding user' });
+            res.status(500).json({ message: 'Error adding user' });
         }
     } else {
-            res.status(409).json({ message: 'User already exists' });
+        res.status(409).json({ message: 'User already exists' });
     }
-}
+};
 
 const handleFetchStatsController = async (req, res) => {
     try {
         const { user_id } = req.params;
-        const userStats = await UserServices.fetchUserStatsService(user_id); 
-    
+        const userStats = await UserServices.fetchUserStatsService(user_id);
+
         if (userStats) {
             return res.status(200).json(userStats);
         }
-    
-        return res.status(404).json({ message: 'User not found' });
 
+        return res.status(404).json({ message: 'User not found' });
     } catch (error) {
         return res.status(500).json({ message: 'Error fetching stats' });
     }
-
-}
-
-export {
-    handleCreateUserController,
-    handleFetchStatsController,
 };
 
+export { handleCreateUserController, handleFetchStatsController };

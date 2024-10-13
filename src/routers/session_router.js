@@ -1,11 +1,7 @@
 import express from 'express';
 import Session from '../models/session_schema.js';
-import Players from '../models/players_schema.js';
 import User from '../models/user_schema.js';
-import {
-    generateScoresArray,
-    shuffleArray,
-} from '../utils/game_logic.js';
+import { generateScoresArray, shuffleArray } from '../utils/game_logic.js';
 import { MAX_ATTEMPTS, CORRECT_GUESSES } from '../utils/globals.js';
 import { handleCreateSessionController, handleFetchSessionController } from '../controllers/session_controller.js';
 
@@ -13,75 +9,6 @@ const router = express.Router();
 
 router.get('/retrieve/:user_id/:session_id', handleFetchSessionController);
 router.post('/create', handleCreateSessionController);
-
-
-async function fetchRandomPlayers() {
-    try {
-        const randomPlayers = await Players.aggregate([
-            { $sample: { size: 5 } },
-            { $project: { _id: 0, __v: 0 } },
-        ]);
-        return randomPlayers;
-    } catch (error) {
-        console.error('Error fetching random players:', error);
-        throw error;
-    }
-}
-
-router.get('/x', async (req, res) => {
-    const players = await fetchRandomPlayers();
-    res.status(200).json({ players: players });
-});
-
-function createSolutionMapping(players) {
-    players.sort((a, b) => b.PPG - a.PPG);
-    const map = {};
-    players.forEach((player, idx) => {
-        map[player.PLAYER_ID] = idx;
-    });
-
-    return map;
-}
-
-const createNewSessionId = () => {
-    return Math.random().toString(36).slice(2, 15);
-};
-
-
-const initiateSession = async (user_id) => {
-    const newSessionId = createNewSessionId();
-
-    try {
-        let randomPlayers = await fetchRandomPlayers();
-        const solutionMap = createSolutionMapping(randomPlayers);
-
-        randomPlayers = shuffleArray(randomPlayers);
-
-        const newSessionObject = {
-            user_id: user_id,
-            session_id: newSessionId,
-            session_status: 0,
-            attempts: 0,
-            players: randomPlayers,
-            solution_map: solutionMap,
-        };
-
-        // console.log(newSessionObject);
-        const newSession = new Session(newSessionObject);
-
-        // console.log(newSession);
-        await newSession.save();
-
-        const strippedPlayers = randomPlayers.map((player) => ({
-            PLAYER_NAME: player.PLAYER_NAME,
-            PLAYER_ID: player.PLAYER_ID,
-        }));
-
-        return { newSessionId, strippedPlayers };
-    } catch (e) {
-        return false;
-    }
-};
 
 
 router.put('/evaluate', async (req, res) => {

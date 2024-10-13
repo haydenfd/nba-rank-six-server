@@ -1,15 +1,13 @@
-const allowedOrigin = 'http://localhost:3000/'; 
+const allowedOrigin = 'http://localhost:3000/';
 
 const validateOrigin = (req, res, next) => {
-    const origin = req.headers['origin'] || req.headers['referer']; 
-  
+    const origin = req.headers['origin'] || req.headers['referer'];
+
     if (origin && origin.startsWith(allowedOrigin)) {
-      next(); 
+        next();
     } else {
-      return res.status(403).json({ message: 'Forbidden: Origin not allowed! Nice try!' });
+        return res.status(403).json({ message: 'Forbidden: Origin not allowed! Nice try!' });
     }
 };
 
-export {
-    validateOrigin,
-};
+export { validateOrigin };

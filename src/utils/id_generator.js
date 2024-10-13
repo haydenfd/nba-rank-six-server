@@ -9,7 +9,4 @@ const generateUserId = () => {
 
 const generateSessionId = () => uuidv4().replace(/-/g, '');
 
-export {
-    generateUserId,
-    generateSessionId,
-};
+export { generateUserId, generateSessionId };

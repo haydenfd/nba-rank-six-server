@@ -1,8 +1,8 @@
-import User from "../models/user_schema.js";
+import User from '../models/user_schema.js';
 
 async function checkIfUserIdExistsService(user_id) {
     const user = await User.findOne({ user_id });
-    return !!user;  
+    return !!user;
 }
 
 async function addUserService(user_id) {
@@ -21,7 +21,7 @@ async function fetchUserStatsService(user_id) {
         const user = await User.findOne({ user_id });
 
         if (!user) return null;
-        
+
         return {
             games_played: user.games_played,
             wins: user.wins,
@@ -35,8 +35,4 @@ async function fetchUserStatsService(user_id) {
     }
 }
 
-export {
-    checkIfUserIdExistsService,
-    addUserService,
-    fetchUserStatsService,
-};
+export { checkIfUserIdExistsService, addUserService, fetchUserStatsService };
