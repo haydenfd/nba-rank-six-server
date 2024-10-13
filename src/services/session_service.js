@@ -84,4 +84,56 @@ const fetchSessionService = async (user_id, session_id) => {
     }
 };
 
-export { createSessionService, fetchSessionService };
+const updateWonSessionService = async (user_id, session_id, attempts) => {
+
+    try {
+        const updateStatus = await Session.updateOne(
+            {
+                user_id: user_id,
+                session_id: session_id,
+            },
+            {
+                $set: {
+                    session_status: 1,
+                    attempts: attempts,
+                },
+            },
+        );
+
+        if (updateStatus.acknowledged) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        return false;
+    }
+}
+
+const updateLostSessionService = async (user_id, session_id, attempts = 3) => {
+
+    try {
+        const updateStatus = await Session.updateOne(
+            {
+                user_id: user_id,
+                session_id: session_id,
+            },
+            {
+                $set: {
+                    session_status: 1,
+                    attempts: attempts,
+                },
+            },
+        );
+
+        if (updateStatus.acknowledged) {
+            return true;
+        } else {
+            return false;
+        }
+    } catch (error) {
+        return false;
+    }
+}
+
+export { createSessionService, fetchSessionService, updateWonSessionService, updateLostSessionService};
