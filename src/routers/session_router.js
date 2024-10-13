@@ -7,8 +7,13 @@ import {
     shuffleArray,
 } from '../utils/game_logic.js';
 import { MAX_ATTEMPTS, CORRECT_GUESSES } from '../utils/globals.js';
+import { handleCreateSessionController, handleFetchSessionController } from '../controllers/session_controller.js';
 
 const router = express.Router();
+
+router.get('/retrieve/:user_id/:session_id', handleFetchSessionController);
+router.post('/create', handleCreateSessionController);
+
 
 async function fetchRandomPlayers() {
     try {
@@ -42,23 +47,6 @@ const createNewSessionId = () => {
     return Math.random().toString(36).slice(2, 15);
 };
 
-router.get('/retrieve/:user_id/:session_id', async (req, res) => {
-    const user_id = req.params.user_id;
-    const session_id = req.params.session_id;
-
-    try {
-        const session = await Session.findOne({ user_id, session_id });
-
-        if (!session) {
-            return res.status(404).send('Session not found');
-        }
-
-        res.status(200).json(session);
-    } catch (error) {
-        console.error(error);
-        res.status(500).send('Server error');
-    }
-});
 
 const initiateSession = async (user_id) => {
     const newSessionId = createNewSessionId();
@@ -95,26 +83,6 @@ const initiateSession = async (user_id) => {
     }
 };
 
-router.post('/create', async (req, res) => {
-    const userId = req.body.user_id;
-
-    try {
-        const { newSessionId, strippedPlayers } = await initiateSession(userId);
-        // console.log(newSessionId);
-        // console.log(strippedPlayers);
-        if (newSessionId) {
-            return res
-                .status(201)
-                .json({
-                    user_id: userId,
-                    session_id: newSessionId,
-                    players: strippedPlayers,
-                });
-        }
-    } catch (error) {
-        return res.status(500).json({ message: error });
-    }
-});
 
 router.put('/evaluate', async (req, res) => {
     const { user_id, session_id, guesses, attempts } = req.body;
