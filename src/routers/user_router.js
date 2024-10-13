@@ -79,7 +79,12 @@ const initiateSession = async (user_id) => {
         // console.log(newSession);
         await newSession.save();
 
-        return { newSessionId, randomPlayers }
+        const strippedPlayers = randomPlayers.map(player => ({
+            PLAYER_NAME: player.PLAYER_NAME,
+            PLAYER_ID: player.PLAYER_ID
+          }));
+      
+        return { newSessionId, strippedPlayers }
     } catch(e) {
         return false;
     }
@@ -118,9 +123,9 @@ router.post('/create', async (req, res) => {
     if (!doesIdExist) {
         const userAdded = await addUser(newId); 
         if (userAdded) {
-            const {newSessionId, randomPlayers} = await initiateSession(newId);
+            const {newSessionId, strippedPlayers} = await initiateSession(newId);
             if (newSessionId) {
-                return res.status(201).json({ "user_id": newId, "session_id": newSessionId, "players": randomPlayers });
+                return res.status(201).json({ "user_id": newId, "session_id": newSessionId, "players": strippedPlayers });
             }
 
             return res.status(500).json({message: 'Could not initiate session'});

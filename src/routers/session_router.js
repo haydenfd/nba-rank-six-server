@@ -41,35 +41,6 @@ const createNewSessionId = () => {
     return Math.random().toString(36).slice(2, 15); 
 }
 
-const initiateSession = async (user_id) => {
-    const newSessionId = createNewSessionId();
-
-    try {
-
-        let randomPlayers = await fetchRandomPlayers();
-        const solutionMap = createSolutionMapping(randomPlayers);
-        
-        randomPlayers = shuffleArray(randomPlayers);
-
-        const newSessionObject = {
-            user_id: user_id,
-            session_id: newSessionId,
-            session_active: true,
-            players: randomPlayers,
-            solution_map: solutionMap,
-        };
-
-        const newSession = new Session(newSessionObject);
-
-        // console.log(newSession);
-        await newSession.save();
-
-        return { newSessionId, randomPlayers, solutionMap }
-    } catch(e) {
-        return false;
-    }
-}
-
 
 
 router.get('/retrieve/:user_id/:session_id', async (req, res) => {
@@ -93,28 +64,59 @@ router.get('/retrieve/:user_id/:session_id', async (req, res) => {
 
 })
 
+
+const initiateSession = async (user_id) => {
+  const newSessionId = createNewSessionId();
+
+  try {
+
+      let randomPlayers = await fetchRandomPlayers();
+      const solutionMap = createSolutionMapping(randomPlayers);
+
+      randomPlayers = shuffleArray(randomPlayers);
+
+      const newSessionObject = {
+          user_id: user_id,
+          session_id: newSessionId,
+          session_status: 0,
+          attempts: 0,
+          players: randomPlayers,
+          solution_map: solutionMap,
+      };
+
+      // console.log(newSessionObject);
+      const newSession = new Session(newSessionObject);
+
+      // console.log(newSession);
+      await newSession.save();
+
+      const strippedPlayers = randomPlayers.map(player => ({
+          PLAYER_NAME: player.PLAYER_NAME,
+          PLAYER_ID: player.PLAYER_ID
+        }));
+    
+      return { newSessionId, strippedPlayers }
+  } catch(e) {
+      return false;
+  }
+}
+
+
 router.post('/create', async (req, res) => {
 
-    const user_id = req.body.user_id;
+    const userId = req.body.user_id;
 
-    const new_id = createNewSessionId();
-    let randomPlayers = await fetchRandomPlayers();
-    const solutionMap = createSolutionMapping(randomPlayers);
-    
-    
-    randomPlayers = shuffleArray(randomPlayers);
+    try {
+      const {newSessionId, strippedPlayers} = await initiateSession(userId);
+      // console.log(newSessionId);
+      // console.log(strippedPlayers);
+      if (newSessionId) {
+        return res.status(201).json({ "user_id": userId, "session_id": newSessionId, "players": strippedPlayers });
+    }
 
-    const newSessionObject = {
-        user_id: user_id,
-        session_id: new_id,
-        players: randomPlayers,
-        solution_map: solutionMap,
-    };
-
-    const newSession = new Session(newSessionObject);
-    await newSession.save();
-
-    res.status(201).json(newSession);
+    } catch (error) {
+      return res.status(500).json({message: error});
+    }
 
 });
 
