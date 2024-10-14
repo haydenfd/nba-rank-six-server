@@ -91,26 +91,3 @@ const updateLostSessionService = async (user_id, session_id, attempts = 3) => {
 };
 
 export { createSessionService, fetchSessionService, updateWonSessionService, updateLostSessionService };
-
-// async function fetchRandomPlayers() {
-    //     try {
-    //         const randomPlayers = await Players.aggregate([{ $sample: { size: 5 } }, { $project: { _id: 0, __v: 0 } }]);
-    //         return randomPlayers;
-    //     } catch (error) {
-    //         console.error('Error fetching random players:', error);
-    //         throw error;
-    //     }
-    // }
-    
-    // function createSolutionMapping(players) {
-    //     const sorted_players = players.sort((a, b) => b.PPG - a.PPG);
-    //     const map = {};
-    //     sorted_players.forEach((player, idx) => {
-    //         map[player.PLAYER_ID] = idx;
-    //     });
-    
-    //     console.log("sorted\n");
-    //     console.log(sorted_players);
-    //     return {sorted_players, map};
-    // }
-    
