@@ -5,6 +5,6 @@ const router = express.Router();
 
 router.get('/retrieve/:user_id/:session_id', handleFetchSessionController);
 router.post('/create', handleCreateSessionController);
-router.put('/evaluate', handleSessionEvaluationController)
+router.put('/evaluate', handleSessionEvaluationController);
 
 export default router;

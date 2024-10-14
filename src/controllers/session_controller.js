@@ -20,8 +20,6 @@ const handleFetchSessionController = async (req, res) => {
     }
 };
 
-
-
 const handleCreateSessionController = async (req, res) => {
     const userId = req.body.user_id;
     const { newSessionId, strippedPlayers } = await createSessionService(userId);
@@ -44,12 +42,12 @@ const handleSessionEvaluationController = async (req, res) => {
         const session = await fetchSessionService(user_id, session_id);
 
         if (!session) {
-            return res.status(404).json({message: 'Session not found'});
+            return res.status(404).json({ message: 'Session not found' });
         }
 
         const solution_map = session.solution_map;
         const scores_array = generateScoresArray(guesses, solution_map);
-        const score = scores_array.filter(s => s === 0).length;
+        const score = scores_array.filter((s) => s === 0).length;
 
         const result_won = {
             session_status: 1,
@@ -61,25 +59,22 @@ const handleSessionEvaluationController = async (req, res) => {
             session_status: -1,
             scores: scores_array,
             attempts: attempts,
-        }
+        };
 
         const result_continue = {
             session_status: 0,
             scores: scores_array,
             attempts: attempts,
-        }
+        };
 
         if (score === CORRECT_GUESSES) {
-
             const updateSessionStatus = await updateWonSessionService(user_id, session_id, attempts);
             const updateUserStatus = await updateUserStatsWonSessionService(user_id, attempts);
             result_won.update_status_user = updateUserStatus;
             result_won.update_status_session = updateSessionStatus;
             return res.status(200).json(result_won);
-
-        } else {    
+        } else {
             if (attempts === MAX_ATTEMPTS) {
-
                 const updateSessionStatus = await updateLostSessionService(user_id, session_id, attempts);
                 const updateUserStatus = await updateUserStatsLostSessionService(user_id);
 
@@ -90,13 +85,10 @@ const handleSessionEvaluationController = async (req, res) => {
                 return res.status(200).json(result_continue);
             }
         }
-    }
-
-    catch (error) {
-        return res.status(500).json({message: 'Internal server error!'})
+    } catch (error) {
+        return res.status(500).json({ message: 'Internal server error!' });
     }
 };
-
 
 export { handleFetchSessionController, handleCreateSessionController, handleSessionEvaluationController };
 
@@ -232,7 +224,7 @@ export { handleFetchSessionController, handleCreateSessionController, handleSess
 
 //     const result = await Session.findOne(
 //         {
-//             user_id: user_id, 
+//             user_id: user_id,
 //             session_status: 0,
 //         }
 //     )

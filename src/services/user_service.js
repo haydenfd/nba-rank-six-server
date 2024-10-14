@@ -35,10 +35,7 @@ async function fetchUserStatsService(user_id) {
     }
 }
 
-
-
 const updateUserStatsWonSessionService = async (user_id, attempts) => {
-
     const user_stats = await fetchUserStatsService(user_id);
 
     const newCurrentStreak = user_stats.current_streak + 1;
@@ -67,11 +64,9 @@ const updateUserStatsWonSessionService = async (user_id, attempts) => {
     } catch (error) {
         return false;
     }
-
 };
 
 const updateUserStatsLostSessionService = async (user_id) => {
-
     try {
         const updateStatus = await User.updateOne(
             {

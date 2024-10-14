@@ -85,7 +85,6 @@ const fetchSessionService = async (user_id, session_id) => {
 };
 
 const updateWonSessionService = async (user_id, session_id, attempts) => {
-
     try {
         const updateStatus = await Session.updateOne(
             {
@@ -104,10 +103,9 @@ const updateWonSessionService = async (user_id, session_id, attempts) => {
     } catch (error) {
         return false;
     }
-}
+};
 
 const updateLostSessionService = async (user_id, session_id, attempts = 3) => {
-
     try {
         const updateStatus = await Session.updateOne(
             {
@@ -122,10 +120,10 @@ const updateLostSessionService = async (user_id, session_id, attempts = 3) => {
             },
         );
 
-       return updateStatus.acknowledged;
+        return updateStatus.acknowledged;
     } catch (error) {
         return false;
     }
-}
+};
 
-export { createSessionService, fetchSessionService, updateWonSessionService, updateLostSessionService};
+export { createSessionService, fetchSessionService, updateWonSessionService, updateLostSessionService };
