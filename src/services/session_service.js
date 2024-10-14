@@ -100,11 +100,7 @@ const updateWonSessionService = async (user_id, session_id, attempts) => {
             },
         );
 
-        if (updateStatus.acknowledged) {
-            return true;
-        } else {
-            return false;
-        }
+        return updateStatus.acknowledged;
     } catch (error) {
         return false;
     }
@@ -120,17 +116,13 @@ const updateLostSessionService = async (user_id, session_id, attempts = 3) => {
             },
             {
                 $set: {
-                    session_status: 1,
+                    session_status: -1,
                     attempts: attempts,
                 },
             },
         );
 
-        if (updateStatus.acknowledged) {
-            return true;
-        } else {
-            return false;
-        }
+       return updateStatus.acknowledged;
     } catch (error) {
         return false;
     }

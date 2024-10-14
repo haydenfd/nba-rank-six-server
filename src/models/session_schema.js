@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const sessionSchema = new mongoose.Schema(
     {
         user_id: { type: String, required: true },
-        session_id: { type: String, required: true },
+        session_id: { type: String },
         session_status: { type: Number, default: 0 },
         players: {
             type: [

@@ -12,23 +12,23 @@ const handleCreateUserController = async (req, res) => {
             const { newSessionId, strippedPlayers } = await createSessionService(newId);
 
             if (newSessionId) {
-                res.status(201).json({
+                return res.status(201).json({
                     user_id: newId,
                     session_id: newSessionId,
                     players: strippedPlayers,
                 });
             }
 
-            res.status(500).json({ message: 'Error creating session' });
+            return res.status(500).json({ message: 'Error creating session' });
         } else {
-            res.status(500).json({ message: 'Error adding user' });
+            return res.status(500).json({ message: 'Error adding user' });
         }
     } else {
-        res.status(409).json({ message: 'User already exists' });
+        return res.status(409).json({ message: 'User already exists' });
     }
 };
 
-const handleFetchStatsController = async (req, res) => {
+const handleFetchUserStatsController = async (req, res) => {
     try {
         const { user_id } = req.params;
         const userStats = await UserServices.fetchUserStatsService(user_id);
@@ -43,4 +43,4 @@ const handleFetchStatsController = async (req, res) => {
     }
 };
 
-export { handleCreateUserController, handleFetchStatsController };
+export { handleCreateUserController, handleFetchUserStatsController };
