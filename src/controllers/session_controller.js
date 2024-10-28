@@ -1,4 +1,4 @@
-import { fetchSessionService, createSessionService, updateWonSessionService, updateLostSessionService } from '../services/session_service.js';
+import { fetchSessionService, createSessionService, updateWonSessionService, updateLostSessionService, fetchSessionForEvaluationService } from '../services/session_service.js';
 import { CORRECT_GUESSES, MAX_ATTEMPTS } from '../utils/globals.js';
 import { generateScoresArray } from '../utils/game_logic.js';
 import { updateUserStatsWonSessionService, updateUserStatsLostSessionService } from '../services/user_service.js';
@@ -39,7 +39,7 @@ const handleSessionEvaluationController = async (req, res) => {
     const { user_id, session_id, guesses, attempts } = req.body;
 
     try {
-        const session = await fetchSessionService(user_id, session_id);
+        const session = await fetchSessionForEvaluationService(user_id, session_id);
 
         if (!session) {
             return res.status(404).json({ message: 'Session not found' });

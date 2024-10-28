@@ -10,11 +10,8 @@ const sessionSchema = new mongoose.Schema(
                 {
                     PLAYER_NAME: { type: String, required: true },
                     PLAYER_ID: { type: String, required: true },
-                    FROM_YEAR: { type: Number },
-                    TO_YEAR: { type: Number },
-                    PPG: { type: Number },
-                    GP: { type: Number },
-                    EXP: { type: Number },
+                    CODE: { type: String, required: true},
+                    PPG: { type: Number, required: true},
                 },
             ],
         },

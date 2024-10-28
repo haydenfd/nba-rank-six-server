@@ -24,7 +24,9 @@ const createSessionService = async (user_id) => {
 
         const strippedPlayers = players.map((player) => ({
             PLAYER_NAME: player.PLAYER_NAME,
-            PLAYER_ID: player.PLAYER_ID,
+            PLAYER_ID: String(player.PLAYER_ID),
+            CODE: player.CODE,
+
         }));
 
         return { newSessionId, strippedPlayers };
@@ -35,11 +37,17 @@ const createSessionService = async (user_id) => {
 
 const fetchSessionService = async (user_id, session_id) => {
     try {
-        const session = await Session.findOne({ user_id, session_id });
+        const session = await Session.findOne(
+            { user_id, session_id },
+            { _id: 0, solution_map: 0, __v: 0 }
+          );
+
+        // console.log(session)
 
         if (!session) {
             return null;
         }
+
 
         return session;
     } catch (error) {
@@ -47,6 +55,21 @@ const fetchSessionService = async (user_id, session_id) => {
         return null;
     }
 };
+
+const fetchSessionForEvaluationService = async (user_id, session_id) => {
+    try {
+        const session = await Session.findOne({ user_id, session_id });
+
+        if (!session) {
+            return null;
+        }
+
+        return session;
+    }
+    catch (err) {
+        return null;
+    }
+}
 
 const updateWonSessionService = async (user_id, session_id, attempts) => {
     try {
@@ -90,4 +113,4 @@ const updateLostSessionService = async (user_id, session_id, attempts = 3) => {
     }
 };
 
-export { createSessionService, fetchSessionService, updateWonSessionService, updateLostSessionService };
+export { createSessionService, fetchSessionService, updateWonSessionService, updateLostSessionService, fetchSessionForEvaluationService };

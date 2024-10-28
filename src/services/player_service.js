@@ -6,6 +6,7 @@ async function fetchPlayersService() {
     try {
         let players = await Players.aggregate([{ $sample: { size: CORRECT_GUESSES } }, { $project: { _id: 0, __v: 0 } }]);
 
+        // console.log(players);
         const sorted_players = sortPlayersByDescPPG(players);
         const solution_map = createSolutionMap(sorted_players);
         
