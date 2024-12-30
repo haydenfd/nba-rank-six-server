@@ -3,6 +3,7 @@ import { handleCreateSessionController, handleFetchSessionController, handleSess
 
 const router = express.Router();
 
+router.get('/test', async (req, res) => res.send('Received'))
 router.get('/retrieve/:user_id/:session_id', handleFetchSessionController);
 router.post('/create', handleCreateSessionController);
 router.put('/evaluate', handleSessionEvaluationController);

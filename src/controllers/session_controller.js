@@ -22,6 +22,7 @@ const handleFetchSessionController = async (req, res) => {
 
 const handleCreateSessionController = async (req, res) => {
     const userId = req.body.user_id;
+    console.log("Invoked create session")
     const { newSessionId, strippedPlayers } = await createSessionService(userId);
 
     if (newSessionId) {

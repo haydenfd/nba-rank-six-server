@@ -32,15 +32,13 @@ mongoose
     });
 
 app.get('/', (req, res) => {
-    res.send('HTTPS active!');
+    res.send('HTTPS active baby!');
 });
 
 app.use('/users', userRouter);
 app.use('/session', sessionRouter);
 
 
-https.createServer({ key, cert }, app).listen(PORT, '0.0.0.0', () => {
+https.createServer({ key, cert }, app).listen(PORT, 'localhost', () => {
     console.log(`HTTPS Server running on port ${PORT}`);
 });
-
-
